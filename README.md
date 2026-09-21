@@ -1,10 +1,10 @@
-# EchoMind - 个性化智能问答助手
+# SunMind - 个性化智能问答助手
 
 <div align="center">
 
 **念念不忘，必有回响**
 
-[![GitHub](https://img.shields.io/badge/GitHub-EchoMind-blue?logo=GitHub)](https://github.com/Dreamt0511/EchoMind)
+[![GitHub](https://img.shields.io/badge/GitHub-SunMind-blue?logo=GitHub)](https://github.com/rainsunsun/sunmind)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.135%2B-009688?logo=FastAPI)](https://fastapi.tiangolo.com)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.56%2B-FF4B4B?logo=Streamlit)](https://streamlit.io)
 [![LangChain](https://img.shields.io/badge/LangChain-1.2%2B-1C3C3C?logo=LangChain)](https://langchain.com)
@@ -15,7 +15,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Supported-2496ED?logo=Docker)](https://docker.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-EchoMind 是一款基于 **FastAPI** 和 **LangChain** 构建的个性化 AI 问答助手。系统采用 **RAG（检索增强生成）** 技术，集成 **Milvus 向量数据库**与 **PostgreSQL 关系数据库**，具备**长期记忆能力**和**自定义知识库管理**功能。EchoMind 能够记住历史对话内容，自动提取并存储用户偏好与习惯，结合私有知识库检索，为用户提供**精准、连贯、个性化**的智能问答服务。
+SunMind 是一款基于 **FastAPI** 和 **LangChain** 构建的个性化 AI 问答助手。系统采用 **RAG（检索增强生成）** 技术，集成 **Milvus 向量数据库**与 **PostgreSQL 关系数据库**，具备**长期记忆能力**和**自定义知识库管理**功能。SunMind 能够记住历史对话内容，自动提取并存储用户偏好与习惯，结合私有知识库检索，为用户提供**精准、连贯、个性化**的智能问答服务。
 
 **核心价值**：让 AI 真正"记住"你，而非每次对话都是初次见面。
 
@@ -34,7 +34,7 @@ EchoMind 是一款基于 **FastAPI** 和 **LangChain** 构建的个性化 AI 问
 
 ## 🎯 项目概述
 
-EchoMind 是一个全功能的个性化 AI 问答系统，主要特点包括：
+SunMind 是一个全功能的个性化 AI 问答系统，主要特点包括：
 - **短期记忆**：支持多轮对话，Redis缓存会话历史，保证对话连贯性。
 - **长期记忆系统**：自动提取和存储用户对话记忆，支持个性化回答
 - **知识库管理**：支持多知识库文档上传、检索和管理
@@ -43,7 +43,7 @@ EchoMind 是一个全功能的个性化 AI 问答系统，主要特点包括：
 - **智能记忆**：自动识别和过滤重复记忆，保持记忆库的高效性
 
 ## 项目网页文档
-[![zread](https://img.shields.io/badge/Ask_Zread-_.svg?style=flat&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff)](https://zread.ai/Dreamt0511/EchoMind)
+[![zread](https://img.shields.io/badge/Ask_Zread-_.svg?style=flat&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff)](https://zread.ai/rainsunsun/sunmind)
 
 ## 📸 界面预览
 ![alt text](assets/demo.png)
@@ -184,8 +184,8 @@ EchoMind 是一个全功能的个性化 AI 问答系统，主要特点包括：
 
 1. **克隆项目**
 ```bash
-git clone https://github.com/Dreamt0511/EchoMind.git
-cd EchoMind
+git clone https://github.com/rainsunsun/sunmind.git
+cd sunmind
 ```
 
 2. **创建虚拟环境**
@@ -250,14 +250,14 @@ memory_collection=memory_collection
 
 # ===== PostgreSQL 数据库配置 =====
 # 完整连接字符串（包含用户名、密码、主机、端口、数据库名）
-DATABASE_URL=postgresql://user:pass@localhost:5432/echomind_db?sslmode=disable
+DATABASE_URL=postgresql://user:pass@localhost:5432/sunmind_db?sslmode=disable
 
 # 分项配置（用于程序自动创建数据库）
 user=your_db_user
 password=your_db_password
 host=localhost
 port=5432
-db_name=echomind_db
+db_name=sunmind_db
 
 # ===== Redis 配置 =====
 # Redis 连接地址（用于对话检查点存储和用户画像缓存）
@@ -379,7 +379,7 @@ TTL_CONFIG = {
 ## 📁 项目结构
 
 ```
-EchoMind/
+sunmind/
 ├── backend/
 |   |── tests/                   # 测试文件夹
 │   ├── agent.py                 # langchian智能代理
@@ -464,7 +464,7 @@ Token数量超过阈值 → 记忆提取 → 冲突检测 →
 
 - **项目维护者**: Dreamt
 - **邮箱**: [mochenge@163.com](mailto:your-email@example.com)
-- **GitHub**: [@Dreamt0511](https://github.com/Dreamt0511)
+- **GitHub**: [@rainsunsun](https://github.com/rainsunsun)
 
 ## 🙏 致谢
 
@@ -481,8 +481,8 @@ Token数量超过阈值 → 记忆提取 → 冲突检测 →
 
 <div align="center">
 
-**[🔝 返回顶部](#echomind---个性化智能问答助手)**
+**[🔝 返回顶部](#sunmind---个性化智能问答助手)**
 
-Made with ❤️ by Dreamt | EchoMind
+Made with ❤️ by Dreamt | SunMind
 
 </div>

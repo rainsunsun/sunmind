@@ -15,7 +15,8 @@ ECHOMIND/
 RAG基础知识/
 SuperMew-backend/
 
-# 忽略 backend 中的 .env 文件
+# 忽略根目录及 backend 中的 .env 文件（含密钥，勿提交）
+.env
 backend/.env
 backend/data
 backend/temp
