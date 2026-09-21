@@ -3,7 +3,7 @@ import asyncio
 import time
 from dotenv import load_dotenv
 from typing import List, Optional, Dict, Any
-from langchain_community.embeddings import DashScopeEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from pymilvus import AsyncMilvusClient, DataType, Function, FunctionType
 from pymilvus import AnnSearchRequest, RRFRanker
 import logging
@@ -20,7 +20,7 @@ class MemoryManager:
     def __init__(
         self,
         client: AsyncMilvusClient,
-        embeddings: DashScopeEmbeddings,
+        embeddings: OpenAIEmbeddings,
         collection_name: str,
         dense_dim: int,
     ):
@@ -33,7 +33,7 @@ class MemoryManager:
         """初始化对话记忆集合"""
         if await self.client.has_collection(self.collection_name):
             logger.info(f"对话记忆集合 {self.collection_name} 已存在")
-            await self.client.load_collection(self.collection_name)
+            # Zilliz Cloud 自动加载集合，无需手动 load_collection
             return
 
         # 创建 Schema
@@ -142,7 +142,7 @@ class MemoryManager:
             index_params=index_params,
             properties={"partitionkey.isolation": True},
         )
-        await self.client.load_collection(self.collection_name)
+        # Zilliz Cloud 自动加载集合，无需手动 load_collection
 
     async def get_dense_vector(self, query: str) -> List[float]:
         """生成稠密向量，带重试机制"""
@@ -603,9 +603,10 @@ async def test_update_access_time():
         uri=os.getenv("Milvus_url"),
         token=os.getenv("Token"),
     )
-    embeddings = DashScopeEmbeddings(
+    embeddings = OpenAIEmbeddings(
         model=os.getenv("EMBEDDING_MODEL"),
-        dashscope_api_key=os.getenv("DASHSCOPE_API_KEY"),
+        openai_api_key=os.getenv("SILICONFLOW_API_KEY", os.getenv("RERANK_API_KEY")),
+        openai_api_base=os.getenv("EMBEDDING_URL", "https://api.siliconflow.cn/v1"),
     )
 
     memory_manager = MemoryManager(

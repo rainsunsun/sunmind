@@ -2,7 +2,7 @@ import os
 import asyncio
 from dotenv import load_dotenv
 from pymilvus import AsyncMilvusClient
-from langchain_community.embeddings import DashScopeEmbeddings
+from langchain_openai import OpenAIEmbeddings
 import logging
 from memory_manager import MemoryManager
 from knowledeg_base_manager import KnowledgeBaseManager
@@ -43,9 +43,10 @@ class AsyncMilvusClientWrapper:
         self.knowledge_base_collection = os.getenv("knowledge_base_collection")
         self.memory_collection = os.getenv("memory_collection")
 
-        self.embeddings = DashScopeEmbeddings(
+        self.embeddings = OpenAIEmbeddings(
             model=os.getenv("EMBEDDING_MODEL"),
-            dashscope_api_key=os.getenv("DASHSCOPE_API_KEY"),
+            openai_api_key=os.getenv("SILICONFLOW_API_KEY", os.getenv("RERANK_API_KEY")),
+            openai_api_base=os.getenv("EMBEDDING_URL", "https://api.siliconflow.cn/v1"),
         )
         self.client = AsyncMilvusClient(
             uri=os.getenv("Milvus_url"),

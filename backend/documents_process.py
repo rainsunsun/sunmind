@@ -95,7 +95,7 @@ class DocumentProcessor:
 
         loop = asyncio.get_event_loop()
         loader = loader_class(temp_file_path)
-        
+
         #父子块文档元数据增强
         def process_all_sync():
             """在一个线程中完成所有同步操作"""
@@ -243,7 +243,8 @@ class DocumentProcessor:
 
 async def rerank_documents(query: str, documents: list, top_n=5):
     """
-    一个通用的重排序API调用模板，带重试机制
+    调用 SiliconFlow（硅基流动）的 bge-reranker 重排序 API，带重试机制。
+    返回结构保持与调用方一致：{"output": {"results": [{"document": {"text": ...}, "index": ..., "relevance_score": ...}]}}
     """
     # 优化：限制输入文档数量
     max_input = min(top_n * 3, 30)  # 最多30个文档
@@ -251,23 +252,24 @@ async def rerank_documents(query: str, documents: list, top_n=5):
         logger.info(f"重排序输入文档数从 {len(documents)} 截取到 {max_input}")
         documents = documents[:max_input]
 
-    rerank_model = os.getenv("RERANK_MODEL", "gte-rerank-v2")
-    api_key = os.getenv("DASHSCOPE_API_KEY")
+    rerank_model = os.getenv("RERANK_MODEL", "BAAI/bge-reranker-v2-m3")
+    api_key = os.getenv("SILICONFLOW_API_KEY", os.getenv("RERANK_API_KEY"))
     if not api_key:
-        logger.error("错误: 请先在环境变量中设置 DASHSCOPE_API_KEY")
+        logger.error("错误: 请先在环境变量中设置 SILICONFLOW_API_KEY")
         return None
 
-    # 官方文档中的API地址和模型名称
-    url = os.getenv("RERANK_URL")
+    url = os.getenv("RERANK_URL", "https://api.siliconflow.cn/v1/rerank")
 
     # 请求头
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
-    # 请求体
+    # SiliconFlow 重排序请求体（平铺格式，区别于 DashScope 的嵌套 input/parameters）
     payload = {
         "model": rerank_model,
-        "input": {"query": query, "documents": documents},
-        "parameters": {"top_n": top_n, "return_documents": True},
+        "query": query,
+        "documents": documents,
+        "top_n": top_n,
+        "return_documents": True,
     }
 
     # 重试逻辑：最多3次，间隔1秒
@@ -275,14 +277,15 @@ async def rerank_documents(query: str, documents: list, top_n=5):
 
     for attempt in range(max_retries):
         try:
-            async with httpx.AsyncClient(timeout=3.0) as client:  # 3秒超时
+            async with httpx.AsyncClient(timeout=30.0) as client:  # 30秒超时
                 response = await client.post(url, headers=headers, json=payload)
 
             if response.status_code == HTTPStatus.OK:
-                return response.json()
+                # SiliconFlow 返回 {"results": [...]}，包一层 output 保持调用方结构不变
+                return {"output": response.json()}
             else:
                 logger.error(
-                    f"API 请求失败 (尝试 {attempt + 1}/{max_retries}): {response.status_code}"
+                    f"API 请求失败 (尝试 {attempt + 1}/{max_retries}): {response.status_code}: {response.text[:200]}"
                 )
                 if attempt == max_retries - 1:
                     logger.error(f"重排序 API 最终失败，返回 None")

@@ -365,6 +365,21 @@ async def get_knowledge_base_files(
     )
 
 
+@router.get("/user_profile")
+async def get_user_profile_info(
+    user_id: int,
+    postgresql_client=Depends(get_postgresql_client),
+):
+    """获取用户画像（正画像 + 负画像），供前端「我的画像」面板展示"""
+    user_profile = await postgresql_client.get_user_profile(user_id) or ""
+    negative_profile = await postgresql_client.get_negative_profile(user_id) or ""
+    return {
+        "status": "success",
+        "user_profile": user_profile,
+        "negative_profile": negative_profile,
+    }
+
+
 @router.delete(
     "/knowledge-bases/{knowledge_base_id}/documents/{file_hash}",
     response_model=DocumentDeleteResponse,

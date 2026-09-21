@@ -15,11 +15,11 @@ async def ensure_database_exists(dsn: str) -> None:
     """确保数据库存在，不存在则自动创建"""
 
     # 直接使用参数，不依赖 DSN 解析
-    user = os.getenv("user")
-    password = os.getenv("password")
-    host = os.getenv("host")
-    port = int(os.getenv("port"))
-    db_name = os.getenv("db_name")
+    user = os.getenv("PG_USER")
+    password = os.getenv("PG_PASSWORD")
+    host = os.getenv("PG_HOST")
+    port = int(os.getenv("PG_PORT"))
+    db_name = os.getenv("PG_DB_NAME")
 
     try:
         conn = await asyncpg.connect(
@@ -133,9 +133,13 @@ class PostgreSQLParentClient:
                         CREATE TABLE IF NOT EXISTS users (
                             user_id SERIAL PRIMARY KEY,
                             user_profile TEXT,
+                            negative_profile TEXT,
                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                         );
+
+                        -- 兼容旧库：为已存在的 users 表补充 negative_profile 列
+                        ALTER TABLE users ADD COLUMN IF NOT EXISTS negative_profile TEXT;
 
                         -- 2. 知识库表（关联用户，支持级联删除）
                         CREATE TABLE IF NOT EXISTS knowledge_bases (
@@ -880,6 +884,43 @@ class PostgreSQLParentClient:
             logger.error(f"查询用户画像失败: {e}")
             return None
 
+    async def get_negative_profile(self, user_id: int) -> Optional[str]:
+        """查询用户负画像 - 使用 Redis 缓存"""
+
+        try:
+            # 1. 先从 Redis 缓存读取
+            redis_client = await get_redis_client()
+            cache_key = f"negative_profile:{user_id}"
+
+            cached_profile = await redis_client.get(cache_key)
+            if cached_profile:
+                logger.info(f"负画像查询（Redis 缓存命中）user_id={user_id}")
+                return cached_profile
+
+            # 2. 缓存未命中，查询数据库
+            if not self.pool:
+                return None
+
+            async with self.pool.acquire() as conn:
+                row = await conn.fetchrow(
+                    "SELECT negative_profile FROM users WHERE user_id = $1",
+                    user_id,
+                )
+
+                if row and row["negative_profile"]:
+                    profile = row["negative_profile"]
+
+                    # 3. 写入 Redis 缓存（TTL 1小时）
+                    await redis_client.setex(cache_key, 3600, profile)
+                    logger.info(f"负画像查询（数据库）user_id={user_id}, 已写入缓存")
+                    return profile
+
+                return None
+
+        except Exception as e:
+            logger.error(f"查询负画像失败: {e}")
+            return None
+
     async def update_user_profile(self, user_id: int, user_profile: str) -> bool:
         """
         更新用户画像，同时写入 Redis 缓存
@@ -926,6 +967,54 @@ class PostgreSQLParentClient:
 
         except Exception as e:
             logger.error(f"更新用户画像失败: {e}")
+            return False
+
+    async def update_negative_profile(self, user_id: int, negative_profile: str) -> bool:
+        """
+        更新用户负画像，同时写入 Redis 缓存
+
+        Args:
+            user_id: 用户ID
+            negative_profile: 用户负画像内容
+
+        Returns:
+            bool: 更新成功返回 True，失败返回 False
+        """
+        if not self.pool:
+            logger.error("Connection pool not initialized")
+            return False
+
+        if not negative_profile or not negative_profile.strip():
+            logger.warning(f"负画像内容为空，跳过更新")
+            return False
+
+        try:
+            # 1. 先更新数据库
+            async with self.pool.acquire() as conn:
+                await conn.execute(
+                    """
+                    INSERT INTO users (user_id, negative_profile, created_at, updated_at)
+                    VALUES ($1, $2, NOW(), NOW())
+                    ON CONFLICT (user_id) DO UPDATE SET
+                        negative_profile = EXCLUDED.negative_profile,
+                        updated_at = NOW()
+                    """,
+                    user_id,
+                    negative_profile.strip(),
+                )
+
+            # 2. 更新 Redis 缓存
+            try:
+                redis_client = await get_redis_client()
+                cache_key = f"negative_profile:{user_id}"
+                await redis_client.setex(cache_key, 3600, negative_profile.strip())
+                logger.info(f"负画像缓存已更新 user_id={user_id}")
+            except Exception as e:
+                logger.warning(f"更新负画像 Redis 缓存失败: {e}")
+            return True
+
+        except Exception as e:
+            logger.error(f"更新负画像失败: {e}")
             return False
 
     async def get_raw_conversation_by_summary_id(

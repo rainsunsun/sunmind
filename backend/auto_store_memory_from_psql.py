@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 TOKEN_THRESHOLD = 1000  # 中间件压缩的是10000token，可根据交流频率自由调整
 MEMORY_EXTRACT_PROMPT = config.MEMORY_EXTRACT_PROMPT
 USER_PROFILE_MERGE_PROMPT = config.USER_PROFILE_MERGE_PROMPT
+NEGATIVE_PROFILE_MERGE_PROMPT = config.NEGATIVE_PROFILE_MERGE_PROMPT
 
 
 async def extract_memories(
@@ -54,6 +55,7 @@ async def extract_memories(
             "episodic_memory": [],
             "procedural_memory": [],
             "user_profile": "",
+            "negative_profile": "",
             "filtered_message_ids": [],
         }
 
@@ -120,6 +122,7 @@ async def extract_memories(
         "episodic_memory": parse_items(result.get("episodic_memory")),
         "procedural_memory": parse_items(result.get("procedural_memory")),
         "user_profile": result.get("user_profile", "").strip(),
+        "negative_profile": result.get("negative_profile", "").strip(),
         "filtered_message_ids": result.get("filtered_message_ids", []),
     }
 
@@ -234,10 +237,12 @@ async def _store_memories(
     pg_client = await get_postgresql_client()
 
     new_user_profile = extract_result.get("user_profile", "")
+    new_negative_profile = extract_result.get("negative_profile", "")
     summary_id = str(uuid.uuid4())
 
     # 查询旧画像（用于回滚和画像补充）
     old_user_profile = await pg_client.get_user_profile(user_id)
+    old_negative_profile = await pg_client.get_negative_profile(user_id)
 
     # 确定需要更新的消息ID
     all_message_ids = [str(msg["id"]) for msg in messages]
@@ -287,6 +292,20 @@ async def _store_memories(
         # 只需要这一行！纯文本画像直接用
         new_user_profile = response.content.strip()
 
+    # 使用小模型对新旧负画像进行合并（禁忌只增不减，宁可多留不可误删）
+    if new_negative_profile:
+        response = await model.ainvoke(
+            [
+                HumanMessage(
+                    content=NEGATIVE_PROFILE_MERGE_PROMPT.format(
+                        old_negative_profile=old_negative_profile,
+                        new_negative_profile=new_negative_profile,
+                    )
+                )
+            ]
+        )
+        new_negative_profile = response.content.strip()
+
     try:
         # 1. 更新 summary_id
         summary_success = await pg_client.update_messages_with_summary_id(
@@ -320,6 +339,26 @@ async def _store_memories(
                     "message_count": len(messages),
                 }
 
+        # 2.1 更新负画像
+        if new_negative_profile:
+            negative_success = await pg_client.update_negative_profile(
+                user_id, new_negative_profile
+            )
+            if not negative_success:
+                logger.error(f"负画像更新失败，回滚 summary_id 和用户画像")
+                await pg_client.update_messages_with_summary_id(
+                    update_message_ids, None
+                )
+                if old_user_profile is not None:
+                    await pg_client.update_user_profile(user_id, old_user_profile)
+                return {
+                    "success": False,
+                    "reason": "负画像更新失败，已回滚",
+                    "filtered_message_ids": filtered_message_ids,
+                    "token_count": total_tokens,
+                    "message_count": len(messages),
+                }
+
         # 3. 更新 Milvus
         milvus_success = await milvus_client.add_memories_batch(
             user_id=user_id,
@@ -335,6 +374,9 @@ async def _store_memories(
             # 回滚用户画像
             if old_user_profile is not None:
                 await pg_client.update_user_profile(user_id, old_user_profile)
+            # 回滚负画像
+            if old_negative_profile is not None:
+                await pg_client.update_negative_profile(user_id, old_negative_profile)
             return {
                 "success": False,
                 "reason": "Milvus插入失败，已回滚PostgreSQL",
@@ -349,6 +391,7 @@ async def _store_memories(
             "success": True,
             "summary_id": summary_id,
             "user_profile": new_user_profile,
+            "negative_profile": new_negative_profile,
             "filtered_message_ids": filtered_message_ids,
             "token_count": total_tokens,
             "message_count": len(messages),
@@ -363,6 +406,8 @@ async def _store_memories(
             await pg_client.update_messages_with_summary_id(update_message_ids, None)
             if old_user_profile is not None:
                 await pg_client.update_user_profile(user_id, old_user_profile)
+            if old_negative_profile is not None:
+                await pg_client.update_negative_profile(user_id, old_negative_profile)
         except Exception as rollback_error:
             logger.error(f"回滚失败: {rollback_error}")
 

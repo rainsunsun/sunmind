@@ -3,7 +3,7 @@ import asyncio
 from dotenv import load_dotenv
 from typing import List, Dict, Any
 from langchain_core.documents import Document
-from langchain_community.embeddings import DashScopeEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from pymilvus import AsyncMilvusClient, DataType, Function, FunctionType
 from pymilvus import AnnSearchRequest, RRFRanker
 import logging
@@ -20,7 +20,7 @@ load_dotenv()
 class KnowledgeBaseManager:
     """知识库管理器 - 负责知识库的初始化和数据操作"""
 
-    def __init__(self, client: AsyncMilvusClient, embeddings: DashScopeEmbeddings,
+    def __init__(self, client: AsyncMilvusClient, embeddings: OpenAIEmbeddings,
                  collection_name: str, dense_dim: int):
         self.client = client
         self.embeddings = embeddings
@@ -32,8 +32,7 @@ class KnowledgeBaseManager:
         # 检查集合是否已存在
         if await self.client.has_collection(self.collection_name):
             logger.info(f"集合 {self.collection_name} 已存在")
-            # 加载集合
-            await self.client.load_collection(self.collection_name)
+            # Zilliz Cloud 自动加载集合，无需手动 load_collection
             return
 
         # 创建 Schema
@@ -129,8 +128,7 @@ class KnowledgeBaseManager:
             index_params=index_params,
             properties={"partitionkey.isolation": True},
         )
-        # 创建集合后，加载集合
-        await self.client.load_collection(self.collection_name)
+        # Zilliz Cloud 自动加载集合，无需手动 load_collection
 
         logger.info(f"集合 {self.collection_name} 创建成功")
 
