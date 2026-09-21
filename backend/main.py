@@ -119,7 +119,7 @@ async def lifespan(app: FastAPI):
 
 
 # 创建应用并传入 lifespan
-app = FastAPI(title="EchoMind-个性化问答助手", lifespan=lifespan)
+app = FastAPI(title="SunMind-个性化问答助手", lifespan=lifespan)
 
 # 将项目中定义的所有 API 端点注册到应用中
 app.include_router(api.router)
