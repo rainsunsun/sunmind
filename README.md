@@ -398,7 +398,6 @@ Token 数量超过阈值 → 记忆提取 → 冲突检测 →
 
 ## 🤝 贡献指南
 
-我们欢迎所有形式的贡献！欢迎提交 Pull Request 或 Issue。
 
 ### 开发流程
 
@@ -417,8 +416,8 @@ Token 数量超过阈值 → 记忆提取 → 冲突检测 →
 
 ## 📞 联系方式
 
-- **项目维护者**：Dreamt
-- **邮箱**：mochenge@163.com
+- **项目维护者**：rainsunsun
+- **邮箱**：1069217859@qq.com
 - **GitHub**：[@rainsunsun](https://github.com/rainsunsun)
 
 ## 🙏 致谢
@@ -439,6 +438,6 @@ Token 数量超过阈值 → 记忆提取 → 冲突检测 →
 
 **[🔝 返回顶部](#sunmind--个性化智能问答助手)**
 
-Made with ❤️ by Dreamt · SunMind
+Made with ❤️ by rainsunsun · SunMind
 
 </div>
